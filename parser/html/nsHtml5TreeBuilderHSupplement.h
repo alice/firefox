@@ -67,7 +67,8 @@ nsIContentHandle* getShadowRootFromHost(nsIContentHandle* aHost,
                                         nsHtml5String aShadowRootMode,
                                         bool aShadowRootIsClonable,
                                         bool aShadowRootIsSerializable,
-                                        bool aShadowRootDelegatesFocus);
+                                        bool aShadowRootDelegatesFocus,
+                                        nsHtml5String aShadowRootReferenceTarget);
 
 nsIContentHandle* getFormPointerForContext(nsIContentHandle* aContext);
 

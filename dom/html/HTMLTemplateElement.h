@@ -72,6 +72,14 @@ class HTMLTemplateElement final : public nsGenericHTMLElement {
     SetHTMLBoolAttr(nsGkAtoms::shadowrootserializable, aValue, aRv);
   }
 
+  void GetShadowRootReferenceTarget(nsAString& aResult) const {
+    GetEnumAttr(nsGkAtoms::shadowrootreferencetarget, nullptr, aResult);
+  }
+  void SetShadowRootReferenceTarget(const nsAString& aValue, ErrorResult& aRv) {
+    SetHTMLAttr(nsGkAtoms::shadowrootreferencetarget, aValue);
+  }
+
+
   void SetHTML(const nsAString& aInnerHTML, const SetHTMLOptions& aOptions,
                ErrorResult& aError) final;
 

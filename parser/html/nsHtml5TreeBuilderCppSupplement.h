@@ -1729,7 +1729,8 @@ void nsHtml5TreeBuilder::setDocumentFragmentForTemplate(
 nsIContentHandle* nsHtml5TreeBuilder::getShadowRootFromHost(
     nsIContentHandle* aHost, nsIContentHandle* aTemplateNode,
     nsHtml5String aShadowRootMode, bool aShadowRootIsClonable,
-    bool aShadowRootIsSerializable, bool aShadowRootDelegatesFocus) {
+    bool aShadowRootIsSerializable, bool aShadowRootDelegatesFocus,
+    nsHtml5String aShadowRootReferenceTarget) {
   mozilla::dom::ShadowRootMode mode;
   if (aShadowRootMode.LowerCaseEqualsASCII("open")) {
     mode = mozilla::dom::ShadowRootMode::Open;

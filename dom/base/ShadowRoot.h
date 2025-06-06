@@ -271,6 +271,17 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
 
   void GetHTML(const GetHTMLOptions& aOptions, nsAString& aResult);
 
+
+  void GetReferenceTarget(nsAString& aResult) const {
+    if (!mReferenceTarget) {
+      return;
+    }
+    mReferenceTarget->ToString(aResult);
+  }
+  void SetReferenceTarget(const nsAString& aValue) {
+    mReferenceTarget = NS_Atomize(aValue);
+  }
+
  protected:
   // FIXME(emilio): This will need to become more fine-grained.
   void ApplicableRulesChanged();
@@ -316,6 +327,8 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
 
   // https://dom.spec.whatwg.org/#shadowroot-serializable
   const IsSerializable mIsSerializable;
+
+  RefPtr<nsAtom> mReferenceTarget;
 
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 };

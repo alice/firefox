@@ -53,26 +53,24 @@ class nsHtml5UTF16Buffer;
 class nsHtml5StateSnapshot;
 class nsHtml5Portability;
 
-class nsHtml5AttributeName {
- public:
-  static int32_t* ALL_NO_NS;
 
- private:
+class nsHtml5AttributeName
+{
+public:
+  static int32_t* ALL_NO_NS;
+private:
   static int32_t* XMLNS_NS;
   static int32_t* XML_NS;
   static int32_t* XLINK_NS;
-
- public:
+public:
   static nsStaticAtom** ALL_NO_PREFIX;
-
- private:
+private:
   static nsStaticAtom** XMLNS_PREFIX;
   static nsStaticAtom** XLINK_PREFIX;
   static nsStaticAtom** XML_PREFIX;
-
- public:
-  inline static int32_t levelOrderBinarySearch(jArray<int32_t, int32_t> data,
-                                               int32_t key) {
+public:
+  inline static int32_t levelOrderBinarySearch(jArray<int32_t, int32_t> data, int32_t key)
+  {
     int32_t n = data.length;
     int32_t i = 0;
     while (i < n) {
@@ -88,9 +86,8 @@ class nsHtml5AttributeName {
     return -1;
   }
 
-  inline static nsHtml5AttributeName* nameByBuffer(char16_t* buf,
-                                                   int32_t length,
-                                                   nsHtml5AtomTable* interner) {
+  inline static nsHtml5AttributeName* nameByBuffer(char16_t* buf, int32_t length, nsHtml5AtomTable* interner)
+  {
     uint32_t hash = nsHtml5AttributeName::bufToHash(buf, length);
     jArray<int32_t, int32_t> hashes;
     hashes = nsHtml5AttributeName::ATTRIBUTE_HASHES;
@@ -98,8 +95,7 @@ class nsHtml5AttributeName {
     if (index < 0) {
       return nullptr;
     }
-    nsHtml5AttributeName* attributeName =
-        nsHtml5AttributeName::ATTRIBUTE_NAMES[index];
+    nsHtml5AttributeName* attributeName = nsHtml5AttributeName::ATTRIBUTE_NAMES[index];
     nsAtom* name = attributeName->getLocal(0);
     if (!nsHtml5Portability::localEqualsBuffer(name, buf, length)) {
       return nullptr;
@@ -107,8 +103,9 @@ class nsHtml5AttributeName {
     return attributeName;
   }
 
- private:
-  inline static uint32_t bufToHash(char16_t* buf, int32_t length) {
+private:
+  inline static uint32_t bufToHash(char16_t* buf, int32_t length)
+  {
     uint32_t len = length;
     uint32_t first = buf[0];
     first <<= 19;
@@ -140,26 +137,28 @@ class nsHtml5AttributeName {
     return len + first + second + third + fourth + fifth + sixth;
   }
 
- public:
+public:
   static const int32_t HTML = 0;
 
   static const int32_t MATHML = 1;
 
   static const int32_t SVG = 2;
 
- private:
+private:
   jInlineArray<int32_t, 3> uri;
   jInlineArray<nsAtom*, 3> local;
   jInlineArray<nsStaticAtom*, 3> prefix;
   bool custom;
-  nsHtml5AttributeName(int32_t* uri, nsStaticAtom* html, nsStaticAtom* mathml,
-                       nsStaticAtom* svg, nsStaticAtom** prefix);
-
- public:
+  nsHtml5AttributeName(int32_t* uri, nsStaticAtom* html, nsStaticAtom* mathml, nsStaticAtom* svg, nsStaticAtom** prefix);
+public:
   nsHtml5AttributeName();
-  inline bool isInterned() { return !custom; }
+  inline bool isInterned()
+  {
+    return !custom;
+  }
 
-  inline void setNameForNonInterned(nsAtom* name) {
+  inline void setNameForNonInterned(nsAtom* name)
+  {
     MOZ_ASSERT(custom);
     NS_IF_ADDREF(name);
     NS_IF_RELEASE(local[0]);
@@ -283,6 +282,7 @@ class nsHtml5AttributeName {
   static nsHtml5AttributeName* ATTR_RENDERING_INTENT;
   static nsHtml5AttributeName* ATTR_SHADOWROOTMODE;
   static nsHtml5AttributeName* ATTR_SEED;
+  static nsHtml5AttributeName* ATTR_SHADOWROOTREFERENCETARGET;
   static nsHtml5AttributeName* ATTR_SHADOWROOTCLONABLE;
   static nsHtml5AttributeName* ATTR_SHADOWROOTSERIALIZABLE;
   static nsHtml5AttributeName* ATTR_SRCDOC;
@@ -680,12 +680,10 @@ class nsHtml5AttributeName {
   static nsHtml5AttributeName* ATTR_FY;
   static nsHtml5AttributeName* ATTR_RY;
   static nsHtml5AttributeName* ATTR_REFY;
-
- private:
+private:
   static nsHtml5AttributeName** ATTRIBUTE_NAMES;
   static staticJArray<int32_t, int32_t> ATTRIBUTE_HASHES;
-
- public:
+public:
   static void initializeStatics();
   static void releaseStatics();
 };

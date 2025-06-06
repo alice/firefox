@@ -5417,6 +5417,11 @@
   value: @IS_NIGHTLY_BUILD@
   mirror: always
 
+- name: dom.shadowdom.referenceTarget.enabled
+  type: bool
+  value: @IS_NIGHTLY_BUILD@
+  mirror: always
+
 # NOTE: This preference is used in unit tests. If it is removed or its default
 # value changes, please update test_sharedMap_static_prefs.js accordingly.
 - name: dom.webcomponents.shadowdom.report_usage

@@ -1348,13 +1348,14 @@ already_AddRefed<ShadowRoot> Element::AttachShadow(const ShadowRootInit& aInit,
   return AttachShadowWithoutNameChecks(
       aInit.mMode, DelegatesFocus(aInit.mDelegatesFocus), aInit.mSlotAssignment,
       ShadowRootClonable(aInit.mClonable),
-      ShadowRootSerializable(aInit.mSerializable));
+      ShadowRootSerializable(aInit.mSerializable),
+      aInit.mReferenceTarget.Value());
 }
 
 already_AddRefed<ShadowRoot> Element::AttachShadowWithoutNameChecks(
     ShadowRootMode aMode, DelegatesFocus aDelegatesFocus,
     SlotAssignmentMode aSlotAssignment, ShadowRootClonable aClonable,
-    ShadowRootSerializable aSerializable) {
+    ShadowRootSerializable aSerializable, const nsString& aReferenceTarget) {
   nsAutoScriptBlocker scriptBlocker;
 
   auto* nim = mNodeInfo->NodeInfoManager();
@@ -1380,7 +1381,8 @@ already_AddRefed<ShadowRoot> Element::AttachShadowWithoutNameChecks(
    */
   RefPtr<ShadowRoot> shadowRoot = new (nim)
       ShadowRoot(this, aMode, aDelegatesFocus, aSlotAssignment, aClonable,
-                 aSerializable, ShadowRootDeclarative::No, nodeInfo.forget());
+                 aSerializable, ShadowRootDeclarative::No, nodeInfo.forget(),
+                 aReferenceTarget);
 
   if (NodeOrAncestorHasDirAuto()) {
     shadowRoot->SetAncestorHasDirAuto();

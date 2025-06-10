@@ -12368,7 +12368,8 @@ nsIContent* nsContentUtils::AttachDeclarativeShadowRoot(nsIContent* aHost,
                                                         ShadowRootMode aMode,
                                                         bool aIsClonable,
                                                         bool aIsSerializable,
-                                                        bool aDelegatesFocus) {
+                                                        bool aDelegatesFocus,
+                                                        const nsAString& aReferenceTarget) {
   RefPtr<Element> host = mozilla::dom::Element::FromNodeOrNull(aHost);
   if (!host || host->GetShadowRoot()) {
     // https://html.spec.whatwg.org/#parsing-main-inhead:shadow-host
@@ -12388,6 +12389,9 @@ nsIContent* nsContentUtils::AttachDeclarativeShadowRoot(nsIContent* aHost,
         nsGenericHTMLFormControlElement::ShadowRootDeclarative::Yes);
     // https://html.spec.whatwg.org/#parsing-main-inhead:available-to-element-internals
     shadowRoot->SetAvailableToElementInternals();
+    if (!aReferenceTarget.IsVoid()) {
+      shadowRoot->SetReferenceTarget(aReferenceTarget);
+    }
   }
   return shadowRoot;
 }

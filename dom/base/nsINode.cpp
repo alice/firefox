@@ -3831,6 +3831,9 @@ already_AddRefed<nsINode> nsINode::CloneAndAdopt(
         return nullptr;
       }
       newShadowRoot->SetIsDeclarative(originalShadowRoot->IsDeclarative());
+      nsString referenceTarget;
+      originalShadowRoot->GetReferenceTarget(referenceTarget);
+      newShadowRoot->SetReferenceTarget(referenceTarget);
 
       for (nsIContent* origChild = originalShadowRoot->GetFirstChild();
            origChild; origChild = origChild->GetNextSibling()) {

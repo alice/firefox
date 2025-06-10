@@ -58,7 +58,8 @@ ShadowRoot::ShadowRoot(Element* aElement, ShadowRootMode aMode,
                        SlotAssignmentMode aSlotAssignment,
                        IsClonable aIsClonable, IsSerializable aIsSerializable,
                        Declarative aDeclarative,
-                       already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo)
+                       already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
+                       const nsAString& referenceTarget)
     : DocumentFragment(std::move(aNodeInfo)),
       DocumentOrShadowRoot(this),
       mMode(aMode),
@@ -68,7 +69,8 @@ ShadowRoot::ShadowRoot(Element* aElement, ShadowRootMode aMode,
       mIsAvailableToElementInternals(false),
       mIsDeclarative(aDeclarative),
       mIsClonable(aIsClonable),
-      mIsSerializable(aIsSerializable) {
+      mIsSerializable(aIsSerializable),
+      mReferenceTarget(referenceTarget) {
   // nsINode.h relies on this.
   MOZ_ASSERT(static_cast<nsINode*>(this) == reinterpret_cast<nsINode*>(this));
   MOZ_ASSERT(static_cast<nsIContent*>(this) ==

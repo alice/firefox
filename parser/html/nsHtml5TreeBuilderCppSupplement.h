@@ -1740,10 +1740,14 @@ nsIContentHandle* nsHtml5TreeBuilder::getShadowRootFromHost(
     return nullptr;
   }
 
+  nsString shadowRootReferenceTarget;
+  aShadowRootReferenceTarget.ToString(shadowRootReferenceTarget);
+
   if (mBuilder) {
     nsIContent* root = nsContentUtils::AttachDeclarativeShadowRoot(
         static_cast<nsIContent*>(aHost), mode, aShadowRootIsClonable,
-        aShadowRootIsSerializable, aShadowRootDelegatesFocus);
+        aShadowRootIsSerializable, aShadowRootDelegatesFocus,
+        shadowRootReferenceTarget);
     if (!root) {
       nsContentUtils::LogSimpleConsoleError(
           u"Failed to attach Declarative Shadow DOM."_ns, "DOM"_ns,
@@ -1761,7 +1765,8 @@ nsIContentHandle* nsHtml5TreeBuilder::getShadowRootFromHost(
   nsIContentHandle* fragHandle = AllocateContentHandle();
   opGetShadowRootFromHost operation(
       aHost, fragHandle, aTemplateNode, mode, aShadowRootIsClonable,
-      aShadowRootIsSerializable, aShadowRootDelegatesFocus);
+      aShadowRootIsSerializable, aShadowRootDelegatesFocus,
+      shadowRootReferenceTarget);
   treeOp->Init(mozilla::AsVariant(operation));
   return fragHandle;
 }

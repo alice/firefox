@@ -61,7 +61,8 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
              Element::DelegatesFocus aDelegatesFocus,
              SlotAssignmentMode aSlotAssignment, IsClonable aClonable,
              IsSerializable aIsSerializable, Declarative aDeclarative,
-             already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo);
+             already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
+             const nsAString& referenceTarget);
 
   void AddSizeOfExcludingThis(nsWindowSizes&, size_t* aNodeSize) const final;
 
@@ -272,14 +273,11 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
   void GetHTML(const GetHTMLOptions& aOptions, nsAString& aResult);
 
 
-  void GetReferenceTarget(nsAString& aResult) const {
-    if (!mReferenceTarget) {
-      return;
-    }
-    mReferenceTarget->ToString(aResult);
+  void GetReferenceTarget(nsString& aResult) const {
+    aResult = mReferenceTarget;
   }
   void SetReferenceTarget(const nsAString& aValue) {
-    mReferenceTarget = NS_Atomize(aValue);
+    mReferenceTarget = aValue;
   }
 
  protected:
@@ -328,7 +326,7 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
   // https://dom.spec.whatwg.org/#shadowroot-serializable
   const IsSerializable mIsSerializable;
 
-  RefPtr<nsAtom> mReferenceTarget;
+  nsString mReferenceTarget;
 
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 };

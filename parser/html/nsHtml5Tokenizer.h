@@ -55,13 +55,11 @@ class nsHtml5UTF16Buffer;
 class nsHtml5StateSnapshot;
 class nsHtml5Portability;
 
-
-class nsHtml5Tokenizer
-{
-private:
+class nsHtml5Tokenizer {
+ private:
   static const int32_t DATA_AND_RCDATA_MASK = ~1;
 
-public:
+ public:
   static const int32_t DATA = 0;
 
   static const int32_t RCDATA = 1;
@@ -220,7 +218,7 @@ public:
 
   static const int32_t COMMENT_LESSTHAN_BANG_DASH_DASH = 79;
 
-private:
+ private:
   static const int32_t LEAD_OFFSET = (0xD800 - (0x10000 >> 10));
 
   static char16_t LT_GT[];
@@ -242,16 +240,20 @@ private:
   static staticJArray<char16_t, int32_t> NOEMBED_ARR;
   static staticJArray<char16_t, int32_t> NOSCRIPT_ARR;
   static staticJArray<char16_t, int32_t> NOFRAMES_ARR;
-protected:
+
+ protected:
   nsHtml5TreeBuilder* tokenHandler;
   nsHtml5StreamParser* encodingDeclarationHandler;
   bool lastCR;
   int32_t stateSave;
-private:
+
+ private:
   int32_t returnStateSave;
-protected:
+
+ protected:
   int32_t index;
-private:
+
+ private:
   bool forceQuirks;
   char16_t additional;
   int32_t entCol;
@@ -260,14 +262,18 @@ private:
   int32_t hi;
   int32_t candidate;
   int32_t charRefBufMark;
-protected:
+
+ protected:
   int32_t value;
-private:
+
+ private:
   bool seenDigits;
   bool suspendAfterCurrentNonTextToken;
-protected:
+
+ protected:
   int32_t cstart;
-private:
+
+ private:
   nsHtml5String publicId;
   nsHtml5String systemId;
   autoJArray<char16_t, int32_t> strBuf;
@@ -276,19 +282,25 @@ private:
   int32_t charRefBufLen;
   autoJArray<char16_t, int32_t> bmpChar;
   autoJArray<char16_t, int32_t> astralChar;
-protected:
+
+ protected:
   nsHtml5ElementName* endTagExpectation;
-private:
+
+ private:
   jArray<char16_t, int32_t> endTagExpectationAsArray;
-protected:
+
+ protected:
   bool endTag;
-private:
+
+ private:
   bool containsHyphen;
   nsHtml5ElementName* tagName;
   nsHtml5ElementName* nonInternedTagName;
-protected:
+
+ protected:
   nsHtml5AttributeName* attributeName;
-private:
+
+ private:
   nsHtml5AttributeName* nonInternedAttributeName;
   RefPtr<nsAtom> doctypeName;
   nsHtml5String publicIdentifier;
@@ -297,14 +309,17 @@ private:
   bool newAttributesEachTime;
   bool shouldSuspend;
   bool keepBuffer;
-protected:
+
+ protected:
   bool confident;
-private:
+
+ private:
   int32_t line;
   int32_t attributeLine;
   nsHtml5AtomTable* interner;
   bool viewingXmlSource;
-public:
+
+ public:
   nsHtml5Tokenizer(nsHtml5TreeBuilder* tokenHandler, bool viewingXmlSource);
   void setInterner(nsHtml5AtomTable* interner);
   void initLocation(nsHtml5String newPublicId, nsHtml5String newSystemId);
@@ -312,46 +327,42 @@ public:
   void setKeepBuffer(bool keepBuffer);
   bool dropBufferIfLongerThan(int32_t length);
   void setState(int32_t specialTokenizerState);
-  void setStateAndEndTagExpectation(int32_t specialTokenizerState, nsHtml5ElementName* endTagExpectation);
-private:
+  void setStateAndEndTagExpectation(int32_t specialTokenizerState,
+                                    nsHtml5ElementName* endTagExpectation);
+
+ private:
   void endTagExpectationToArray();
-public:
+
+ public:
   void setLineNumber(int32_t line);
-  inline int32_t getLineNumber()
-  {
-    return line;
-  }
+  inline int32_t getLineNumber() { return line; }
 
   nsHtml5HtmlAttributes* emptyAttributes();
-private:
-  inline void appendCharRefBuf(char16_t c)
-  {
-    MOZ_RELEASE_ASSERT(charRefBufLen < charRefBuf.length, "Attempted to overrun charRefBuf!");
+
+ private:
+  inline void appendCharRefBuf(char16_t c) {
+    MOZ_RELEASE_ASSERT(charRefBufLen < charRefBuf.length,
+                       "Attempted to overrun charRefBuf!");
     charRefBuf[charRefBufLen++] = c;
   }
 
   void emitOrAppendCharRefBuf(int32_t returnState);
-  inline void clearStrBufAfterUse()
-  {
-    strBufLen = 0;
-  }
+  inline void clearStrBufAfterUse() { strBufLen = 0; }
 
-  inline void clearStrBufBeforeUse()
-  {
+  inline void clearStrBufBeforeUse() {
     MOZ_ASSERT(!strBufLen, "strBufLen not reset after previous use!");
     strBufLen = 0;
   }
 
-  inline void clearStrBufAfterOneHyphen()
-  {
+  inline void clearStrBufAfterOneHyphen() {
     MOZ_ASSERT(strBufLen == 1, "strBufLen length not one!");
     MOZ_ASSERT(strBuf[0] == '-', "strBuf does not start with a hyphen!");
     strBufLen = 0;
   }
 
-  inline void appendStrBuf(char16_t c)
-  {
-    MOZ_ASSERT(strBufLen < strBuf.length, "Previous buffer length insufficient.");
+  inline void appendStrBuf(char16_t c) {
+    MOZ_ASSERT(strBufLen < strBuf.length,
+               "Previous buffer length insufficient.");
     if (MOZ_UNLIKELY(strBufLen == strBuf.length)) {
       if (MOZ_UNLIKELY(!EnsureBufferSpace(1))) {
         MOZ_CRASH("Unable to recover from buffer reallocation failure");
@@ -360,48 +371,56 @@ private:
     strBuf[strBufLen++] = c;
   }
 
-protected:
+ protected:
   nsHtml5String strBufToString();
-private:
+
+ private:
   void strBufToDoctypeName();
   void emitStrBuf();
-  inline void appendSecondHyphenToBogusComment()
-  {
-    appendStrBuf('-');
-  }
+  inline void appendSecondHyphenToBogusComment() { appendStrBuf('-'); }
 
-  inline void adjustDoubleHyphenAndAppendToStrBufAndErr(char16_t c, bool reportedConsecutiveHyphens)
-  {
+  inline void adjustDoubleHyphenAndAppendToStrBufAndErr(
+      char16_t c, bool reportedConsecutiveHyphens) {
     appendStrBuf(c);
   }
 
   void appendStrBuf(char16_t* buffer, int32_t offset, int32_t length);
-  inline void appendCharRefBufToStrBuf()
-  {
+  inline void appendCharRefBufToStrBuf() {
     appendStrBuf(charRefBuf, 0, charRefBufLen);
     charRefBufLen = 0;
   }
 
   void emitComment(int32_t provisionalHyphens, int32_t pos);
-protected:
+
+ protected:
   void flushChars(char16_t* buf, int32_t pos);
-private:
+
+ private:
   void strBufToElementNameString();
   int32_t emitCurrentTagToken(bool selfClosing, int32_t pos);
   void attributeNameComplete();
   void addAttributeWithoutValue();
   void addAttributeWithValue();
-public:
+
+ public:
   void start();
   bool tokenizeBuffer(nsHtml5UTF16Buffer* buffer);
-private:
-  template<class P> int32_t stateLoop(int32_t state, char16_t c, int32_t pos, char16_t* buf, bool reconsume, int32_t returnState, int32_t endPos);
+
+ private:
+  template <class P>
+  int32_t stateLoop(int32_t state, char16_t c, int32_t pos, char16_t* buf,
+                    bool reconsume, int32_t returnState, int32_t endPos);
   void initDoctypeFields();
-  template<class P> void adjustDoubleHyphenAndAppendToStrBufCarriageReturn();
-  template<class P> void adjustDoubleHyphenAndAppendToStrBufLineFeed();
-  template<class P> void appendStrBufLineFeed();
-  template<class P> void appendStrBufCarriageReturn();
-  template<class P> void emitCarriageReturn(char16_t* buf, int32_t pos);
+  template <class P>
+  void adjustDoubleHyphenAndAppendToStrBufCarriageReturn();
+  template <class P>
+  void adjustDoubleHyphenAndAppendToStrBufLineFeed();
+  template <class P>
+  void appendStrBufLineFeed();
+  template <class P>
+  void appendStrBufCarriageReturn();
+  template <class P>
+  void emitCarriageReturn(char16_t* buf, int32_t pos);
   void emitReplacementCharacter(char16_t* buf, int32_t pos);
   void maybeEmitReplacementCharacter(char16_t* buf, int32_t pos);
   void emitPlaintextReplacementCharacter(char16_t* buf, int32_t pos);
@@ -409,26 +428,32 @@ private:
   void bogusDoctype();
   void bogusDoctypeWithoutQuirks();
   void handleNcrValue(int32_t returnState);
-public:
+
+ public:
   void eof();
-private:
+
+ private:
   void emitDoctypeToken(int32_t pos);
   void suspendIfRequestedAfterCurrentNonTextToken();
   void suspendAfterCurrentTokenIfNotInText();
   bool suspensionAfterCurrentNonTextTokenPending();
-public:
+
+ public:
   bool internalEncodingDeclaration(nsHtml5String internalCharset);
-private:
+
+ private:
   void emitOrAppendTwo(const char16_t* val, int32_t returnState);
   void emitOrAppendOne(const char16_t* val, int32_t returnState);
-public:
+
+ public:
   void end();
   void requestSuspension();
   bool isInDataState();
   void resetToDataState();
   void loadState(nsHtml5Tokenizer* other);
   void initializeWithoutStarting();
-  void setEncodingDeclarationHandler(nsHtml5StreamParser* encodingDeclarationHandler);
+  void setEncodingDeclarationHandler(
+      nsHtml5StreamParser* encodingDeclarationHandler);
   ~nsHtml5Tokenizer();
   static void initializeStatics();
   static void releaseStatics();

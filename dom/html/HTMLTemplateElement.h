@@ -73,7 +73,12 @@ class HTMLTemplateElement final : public nsGenericHTMLElement {
   }
 
   void GetShadowRootReferenceTarget(nsAString& aResult) const {
-    GetEnumAttr(nsGkAtoms::shadowrootreferencetarget, nullptr, aResult);
+    if (!HasAttr(nsGkAtoms::shadowrootreferencetarget)) {
+      aResult.Truncate();
+      aResult.SetIsVoid(true);
+      return;
+    }
+    GetAttr(nsGkAtoms::shadowrootreferencetarget, aResult);
   }
   void SetShadowRootReferenceTarget(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::shadowrootreferencetarget, aValue);

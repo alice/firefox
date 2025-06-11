@@ -1345,11 +1345,12 @@ already_AddRefed<ShadowRoot> Element::AttachShadow(const ShadowRootInit& aInit,
     OwnerDoc()->ReportShadowDOMUsage();
   }
 
+  nsString referenceTarget = aInit.mReferenceTarget.WasPassed() ? aInit.mReferenceTarget.Value() : VoidString();
   return AttachShadowWithoutNameChecks(
       aInit.mMode, DelegatesFocus(aInit.mDelegatesFocus), aInit.mSlotAssignment,
       ShadowRootClonable(aInit.mClonable),
       ShadowRootSerializable(aInit.mSerializable),
-      aInit.mReferenceTarget.Value());
+      referenceTarget);
 }
 
 already_AddRefed<ShadowRoot> Element::AttachShadowWithoutNameChecks(

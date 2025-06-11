@@ -272,7 +272,6 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
 
   void GetHTML(const GetHTMLOptions& aOptions, nsAString& aResult);
 
-
   void GetReferenceTarget(nsString& aResult) const {
     aResult = mReferenceTarget;
   }

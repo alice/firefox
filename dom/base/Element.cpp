@@ -1345,12 +1345,13 @@ already_AddRefed<ShadowRoot> Element::AttachShadow(const ShadowRootInit& aInit,
     OwnerDoc()->ReportShadowDOMUsage();
   }
 
-  nsString referenceTarget = aInit.mReferenceTarget.WasPassed() ? aInit.mReferenceTarget.Value() : VoidString();
+  nsString referenceTarget = aInit.mReferenceTarget.WasPassed()
+                                 ? aInit.mReferenceTarget.Value()
+                                 : VoidString();
   return AttachShadowWithoutNameChecks(
       aInit.mMode, DelegatesFocus(aInit.mDelegatesFocus), aInit.mSlotAssignment,
       ShadowRootClonable(aInit.mClonable),
-      ShadowRootSerializable(aInit.mSerializable),
-      referenceTarget);
+      ShadowRootSerializable(aInit.mSerializable), referenceTarget);
 }
 
 already_AddRefed<ShadowRoot> Element::AttachShadowWithoutNameChecks(
@@ -1380,10 +1381,9 @@ already_AddRefed<ShadowRoot> Element::AttachShadowWithoutNameChecks(
    *    context object's node document, host is context object,
    *    and mode is init's mode.
    */
-  RefPtr<ShadowRoot> shadowRoot = new (nim)
-      ShadowRoot(this, aMode, aDelegatesFocus, aSlotAssignment, aClonable,
-                 aSerializable, ShadowRootDeclarative::No, nodeInfo.forget(),
-                 aReferenceTarget);
+  RefPtr<ShadowRoot> shadowRoot = new (nim) ShadowRoot(
+      this, aMode, aDelegatesFocus, aSlotAssignment, aClonable, aSerializable,
+      ShadowRootDeclarative::No, nodeInfo.forget(), aReferenceTarget);
 
   if (NodeOrAncestorHasDirAuto()) {
     shadowRoot->SetAncestorHasDirAuto();

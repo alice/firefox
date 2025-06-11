@@ -84,7 +84,6 @@ class HTMLTemplateElement final : public nsGenericHTMLElement {
     SetHTMLAttr(nsGkAtoms::shadowrootreferencetarget, aValue);
   }
 
-
   void SetHTML(const nsAString& aInnerHTML, const SetHTMLOptions& aOptions,
                ErrorResult& aError) final;
 

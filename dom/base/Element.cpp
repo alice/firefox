@@ -1548,9 +1548,11 @@ void Element::UnattachShadow() {
 
 Element* Element::ResolveReferenceTarget() const {
   if (!StaticPrefs::dom_shadowdom_referenceTarget_enabled()) {
-    fprintf(stderr, "reference target not enabled");
+    fprintf(stderr, "ResolveReferenceTarget: reference target not enabled");
     return const_cast<Element*>(this);
   }
+  fprintf(stderr, "ResolveReferenceTarget\n");
+
 
   const Element* element = this;
   ShadowRoot* shadow = GetShadowRoot();
@@ -1935,7 +1937,7 @@ Element* Element::GetElementByIdInDocOrSubtree(nsAtom* aID) const {
 }
 
 Element* Element::GetAttrAssociatedElementInternal(nsAtom* aAttr) const {
-  fprintf(stderr, "GetAttrAssociatedElementInternal %ls\n", aAttr->GetUTF16String());
+  fprintf(stderr, "GetAttrAssociatedElementInternal\n");
   Element* attrEl = nullptr;
   bool hasExplicitEl = false;
 
@@ -2119,6 +2121,7 @@ void Element::ExplicitlySetAttrElement(nsAtom* aAttr, Element* aElement) {
     nsExtendedDOMSlots* slots = ExtendedDOMSlots();
     slots->mExplicitlySetAttrElementMap.InsertOrUpdate(
         aAttr, do_GetWeakReference(aElement));
+
 #ifdef ACCESSIBILITY
     if (accService) {
       accService->NotifyAttrElementChanged(this, aAttr);

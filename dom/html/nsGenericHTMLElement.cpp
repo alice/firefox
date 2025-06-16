@@ -2987,7 +2987,7 @@ bool nsGenericHTMLFormControlElementWithState::ParseAttribute(
 
 mozilla::dom::Element*
 nsGenericHTMLFormControlElementWithState::GetPopoverTargetElementForBindings() const {
-  fprintf(stderr, "GetPopoverTargetElementInternal\n");
+  fprintf(stderr, "GetPopoverTargetElementForBindings\n");
   return GetAttrAssociatedElementForBindings(nsGkAtoms::popovertarget);
 }
 

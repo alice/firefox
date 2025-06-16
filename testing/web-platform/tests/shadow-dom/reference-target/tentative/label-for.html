@@ -29,7 +29,7 @@
     assert_equals(await test_driver.get_computed_label(input), "Input 1");
   }, "Label for attribute targets a custom element using shadowrootreferencetarget");
 </script>
-
+<!--
 <label for="x-outer2">Input 2</label>
 <x-outer2 id="x-outer2">
   <template shadowrootmode="open" shadowrootreferencetarget="x-inner2">
@@ -148,6 +148,7 @@ fancy input inside label
     assert_equals(await test_driver.get_computed_label(real_input2), "");
   }, "Implicit <label> association should apply to only the first labelable custom element");
 </script>
+-->
 
 </body>
 

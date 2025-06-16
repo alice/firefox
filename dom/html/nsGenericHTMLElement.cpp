@@ -2986,12 +2986,27 @@ bool nsGenericHTMLFormControlElementWithState::ParseAttribute(
 }
 
 mozilla::dom::Element*
-nsGenericHTMLFormControlElementWithState::GetPopoverTargetElement() const {
-  return GetAttrAssociatedElement(nsGkAtoms::popovertarget);
+nsGenericHTMLFormControlElementWithState::GetPopoverTargetElementForBindings() const {
+  fprintf(stderr, "GetPopoverTargetElementInternal\n");
+  return GetAttrAssociatedElementForBindings(nsGkAtoms::popovertarget);
 }
 
-void nsGenericHTMLFormControlElementWithState::SetPopoverTargetElement(
+mozilla::dom::Element*
+nsGenericHTMLFormControlElementWithState::GetPopoverTargetElementInternal() const {
+  fprintf(stderr, "GetPopoverTargetElementInternal\n");
+  return GetAttrAssociatedElementInternal(nsGkAtoms::popovertarget);
+}
+
+void nsGenericHTMLFormControlElementWithState::SetPopoverTargetElementForBindings(
     mozilla::dom::Element* aElement) {
+  fprintf(stderr, "SetPopoverTargetElementForBindings %p\n", aElement);
+  if (aElement) {
+    OwningTrustedHTMLOrNullIsEmptyString result;
+    aElement->GetOuterHTML(result);
+    fprintf(stderr, "SetPopoverTargetElementForBindings %ls\n", result.SetAsNullIsEmptyString().get());
+  } else {
+    fprintf(stderr, "SetPopoverTargetElementForBindings with null element\n");
+  }
   ExplicitlySetAttrElement(nsGkAtoms::popovertarget, aElement);
 }
 
@@ -3065,7 +3080,7 @@ InvokeAction nsGenericHTMLFormControlElementWithState::GetInvokeAction(
 mozilla::dom::Element*
 nsGenericHTMLFormControlElementWithState::GetInvokeTargetElement() const {
   if (StaticPrefs::dom_element_invokers_enabled()) {
-    return GetAttrAssociatedElement(nsGkAtoms::invoketarget);
+    return GetAttrAssociatedElementInternal(nsGkAtoms::invoketarget);
   }
   return nullptr;
 }

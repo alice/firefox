@@ -256,24 +256,25 @@ class TrustedHTMLOrTrustedScriptOrTrustedScriptURLOrString;
     SetOrRemoveNullableStringAttr(nsGkAtoms::attr, aValue, aRv); \
   }
 
-#define REFLECT_NULLABLE_ELEMENT_ATTR(method, attr)      \
-  Element* Get##method() const {                         \
-    return GetAttrAssociatedElement(nsGkAtoms::attr);    \
-  }                                                      \
-                                                         \
-  void Set##method(Element* aElement) {                  \
-    ExplicitlySetAttrElement(nsGkAtoms::attr, aElement); \
+#define REFLECT_NULLABLE_ELEMENT_ATTR(method, attr)              \
+  Element* Get##method() const {                                 \
+    return GetAttrAssociatedElementForBindings(nsGkAtoms::attr); \
+  }                                                              \
+                                                                 \
+  void Set##method(Element* aElement) {                          \
+    ExplicitlySetAttrElement(nsGkAtoms::attr, aElement);         \
   }
 
-#define REFLECT_NULLABLE_ELEMENTS_ATTR(method, attr)                        \
-  void Get##method(bool* aUseCachedValue,                                   \
-                   Nullable<nsTArray<RefPtr<Element>>>& aElements) {        \
-    GetAttrAssociatedElements(nsGkAtoms::attr, aUseCachedValue, aElements); \
-  }                                                                         \
-                                                                            \
-  void Set##method(                                                         \
-      const Nullable<Sequence<OwningNonNull<Element>>>& aElements) {        \
-    ExplicitlySetAttrElements(nsGkAtoms::attr, aElements);                  \
+#define REFLECT_NULLABLE_ELEMENTS_ATTR(method, attr)                       \
+  void Get##method(bool* aUseCachedValue,                                  \
+                   Nullable<nsTArray<RefPtr<Element>>>& aElements) {       \
+    GetAttrAssociatedElementsForBindings(nsGkAtoms::attr, aUseCachedValue, \
+                                         aElements);                       \
+  }                                                                        \
+                                                                           \
+  void Set##method(                                                        \
+      const Nullable<Sequence<OwningNonNull<Element>>>& aElements) {       \
+    ExplicitlySetAttrElements(nsGkAtoms::attr, aElements);                 \
   }
 
 // TODO(keithamus): Reference the spec link once merged.
@@ -1335,8 +1336,12 @@ class Element : public FragmentOrElement {
    * Returns attribute associated element for the given attribute name, see
    * https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#attr-associated-element
    */
-  Element* GetAttrAssociatedElement(nsAtom* aAttr) const;
-  void GetAttrAssociatedElements(
+  Element* GetAttrAssociatedElementInternal(nsAtom* aAttr) const;
+  Element* GetAttrAssociatedElementForBindings(nsAtom* aAttr) const;
+
+  Maybe<nsTArray<RefPtr<Element>>> GetAttrAssociatedElementsInternal(
+      nsAtom* aAttr);
+  void GetAttrAssociatedElementsForBindings(
       nsAtom* aAttr, bool* aUseCachedValue,
       Nullable<nsTArray<RefPtr<Element>>>& aElements);
 
@@ -1511,6 +1516,10 @@ class Element : public FragmentOrElement {
     const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();
     return slots ? slots->mShadowRoot.get() : nullptr;
   }
+
+  // TODO(alice): should this be some kind of smart pointer?
+  Element* ResolveReferenceTarget() const;
+  Element* RetargetReferenceTargetForBindings(Element* element) const;
 
   const Maybe<float> GetLastRememberedBSize() const {
     const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots();

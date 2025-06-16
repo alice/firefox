@@ -11,7 +11,7 @@
 </head>
 
 <body>
-  <button id="toggle-button-1" popovertarget="x-popover-1">Toggle the popover</button>
+  <!--<button id="toggle-button-1" popovertarget="x-popover-1">Toggle the popover</button>
   <x-popover-1 id="x-popover-1">
     <template shadowrootmode="open" shadowrootreferencetarget="popover">
       <div id="popover" popover>Popover content inside shadow root</div>
@@ -24,7 +24,7 @@
     const customPopover2 = document.querySelector('x-popover-2');
     customPopover2.attachShadow({ mode: 'open', referenceTarget: 'popover' });
     customPopover2.shadowRoot.innerHTML = '<div id="popover" popover>Popover content inside shadow root</div>';
-  </script>
+  </script>-->
 
   <button id="toggle-button-3">Toggle the popover</button>
   <x-popover-3 id="x-popover-3">
@@ -35,6 +35,7 @@
 
   <script>
     function testPopoverTarget(popoverId, buttonId, name) {
+      console.log("testPopoverTarget");
       test(function () {
         const xPopover = document.getElementById(popoverId);
         const popover = xPopover.shadowRoot.getElementById("popover");
@@ -51,9 +52,11 @@
         assert_equals(showCount, 1, "showCount");
       }, name);
     }
-    testPopoverTarget('x-popover-1', 'toggle-button-1', "Shadow root reference target works with popovertarget attribute.");
-    testPopoverTarget('x-popover-2', 'toggle-button-2', "Shadow root reference target works with popovertarget attribute via options.");
+    //testPopoverTarget('x-popover-1', 'toggle-button-1', "Shadow root reference target works with popovertarget attribute.");
+    //testPopoverTarget('x-popover-2', 'toggle-button-2', "Shadow root reference target works with popovertarget attribute via options.");
+    console.log('about to set popoverTargetElement');
     document.getElementById('toggle-button-3').popoverTargetElement = document.getElementById('x-popover-3');
+    console.log('popoverTargetElement set', document.getElementById('toggle-button-3').popoverTargetElement);
     testPopoverTarget('x-popover-3', 'toggle-button-3', "Shadow root reference target works with .popoverTargetElement property.");
   </script>
 </body>

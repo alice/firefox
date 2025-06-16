@@ -1546,6 +1546,41 @@ void Element::UnattachShadow() {
   SetShadowRoot(nullptr);
 }
 
+Element* Element::ResolveReferenceTarget() const {
+  if (!StaticPrefs::dom_shadowdom_referenceTarget_enabled()) {
+    fprintf(stderr, "reference target not enabled");
+    return const_cast<Element*>(this);
+  }
+
+  const Element* element = this;
+  ShadowRoot* shadow = GetShadowRoot();
+
+  while (shadow && shadow->HasReferenceTarget()) {
+    element = shadow->ReferenceTargetElement();
+    shadow = element ? element->GetShadowRoot() : nullptr;
+  }
+  return const_cast<Element*>(element);
+}
+
+Element* Element::RetargetReferenceTargetForBindings(Element* element) const {
+  if (!StaticPrefs::dom_shadowdom_referenceTarget_enabled()) {
+    return element;
+  }
+
+  if (!element) {
+    return nullptr;
+  }
+
+  DocumentOrShadowRoot* scope;
+  if (IsInShadowTree()) {
+    scope = AsContent()->GetContainingShadow();
+  } else {
+    scope = OwnerDoc();
+  }
+  MOZ_ASSERT(scope);
+  return const_cast<Element*>(scope->Retarget(element)->AsElement());
+}
+
 void Element::GetAttribute(const nsAString& aName, DOMString& aReturn) {
   const nsAttrValue* val = mAttrs.GetAttr(
       aName,
@@ -1899,93 +1934,136 @@ Element* Element::GetElementByIdInDocOrSubtree(nsAtom* aID) const {
   return nsContentUtils::MatchElementId(SubtreeRoot()->AsContent(), aID);
 }
 
-Element* Element::GetAttrAssociatedElement(nsAtom* aAttr) const {
+Element* Element::GetAttrAssociatedElementInternal(nsAtom* aAttr) const {
+  fprintf(stderr, "GetAttrAssociatedElementInternal %ls\n", aAttr->GetUTF16String());
+  Element* attrEl = nullptr;
+  bool hasExplicitEl = false;
+
   if (const nsExtendedDOMSlots* slots = GetExistingExtendedDOMSlots()) {
-    nsWeakPtr weakAttrEl = slots->mExplicitlySetAttrElementMap.Get(aAttr);
-    if (nsCOMPtr<Element> attrEl = do_QueryReferent(weakAttrEl)) {
-      // If reflectedTarget's explicitly set attr-element |attrEl| is
+    nsWeakPtr weakExplicitEl = slots->mExplicitlySetAttrElementMap.Get(aAttr);
+    if (nsCOMPtr<Element> explicitEl = do_QueryReferent(weakExplicitEl)) {
+      hasExplicitEl = true;
+      fprintf(stderr, "hasExplicitEl\n");
+
+      // If reflectedTarget's explicitly set attr-element |explicitEl| is
       // a descendant of any of element's shadow-including ancestors, then
-      // return |atrEl|.
-      if (HasSharedRoot(attrEl)) {
-        return attrEl;
+      // return |explicitEl|.
+      if (HasSharedRoot(explicitEl)) {
+        fprintf(stderr, "HasSharedRoot\n");
+        attrEl = explicitEl;
+      } else {
+        fprintf(stderr, "no shared root\n");
       }
-      return nullptr;
     }
   }
 
-  const nsAttrValue* value = GetParsedAttr(aAttr);
-  if (!value) {
+  if (!hasExplicitEl) {
+    fprintf(stderr, "not hasExplicitEl\n");
+
+    const nsAttrValue* value = GetParsedAttr(aAttr);
+    if (!value) {
+      return nullptr;
+    }
+
+    MOZ_ASSERT(value->Type() == nsAttrValue::eAtom,
+               "Attribute used for attr associated element must be parsed");
+
+    attrEl = GetElementByIdInDocOrSubtree(value->GetAtomValue());
+  }
+
+  if (!attrEl) {
     return nullptr;
   }
 
-  MOZ_ASSERT(value->Type() == nsAttrValue::eAtom,
-             "Attribute used for attr associated element must be parsed");
-
-  return GetElementByIdInDocOrSubtree(value->GetAtomValue());
+  return attrEl->ResolveReferenceTarget();
 }
 
-void Element::GetAttrAssociatedElements(
+Element* Element::GetAttrAssociatedElementForBindings(nsAtom* aAttr) const {
+  Element* element = GetAttrAssociatedElementInternal(aAttr);
+  return RetargetReferenceTargetForBindings(element);
+}
+
+Maybe<nsTArray<RefPtr<Element>>> Element::GetAttrAssociatedElementsInternal(
+    nsAtom* aAttr) {
+  // https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#attr-associated-elements
+  nsTArray<RefPtr<Element>> elements;
+
+  auto& [explicitlySetAttrElements, _] =
+      ExtendedDOMSlots()->mAttrElementsMap.LookupOrInsert(aAttr);
+
+  if (explicitlySetAttrElements) {
+    // 3. If reflectedTarget's explicitly set attr-elements is not null
+    for (const nsWeakPtr& weakEl : *explicitlySetAttrElements) {
+      // For each attrElement in reflectedTarget's explicitly set
+      // attr-elements:
+      if (nsCOMPtr<Element> attrEl = do_QueryReferent(weakEl)) {
+        // If attrElement is not a descendant of any of element's
+        // shadow-including ancestors, then continue.
+        if (!HasSharedRoot(attrEl)) {
+          continue;
+        }
+        // Append attrElement to elements.
+        elements.AppendElement(attrEl);
+      }
+    }
+  } else {
+    // 4. Otherwise
+    //   1. Let contentAttributeValue be the result of running
+    //   reflectedTarget's get the content attribute.
+    const nsAttrValue* value = GetParsedAttr(aAttr);
+    //   2. If contentAttributeValue is null, then return null.
+    if (!value) {
+      return Nothing();
+    }
+
+    //   3. Let tokens be contentAttributeValue, split on ASCII whitespace.
+    MOZ_ASSERT(value->Type() == nsAttrValue::eAtomArray ||
+                    value->Type() == nsAttrValue::eAtom,
+                "Attribute used for attr associated elements must be parsed");
+    for (uint32_t i = 0; i < value->GetAtomCount(); i++) {
+      // For each id of tokens:
+      if (auto* candidate = GetElementByIdInDocOrSubtree(
+              value->AtomAt(static_cast<int32_t>(i)))) {
+        // Append candidate to elements.
+        elements.AppendElement(candidate);
+      }
+    }
+  }
+
+  if (!StaticPrefs::dom_shadowdom_referenceTarget_enabled()) {
+    return Some(std::move(elements));
+  }
+
+  nsTArray<RefPtr<Element>> resolvedElements;
+  for (const RefPtr<Element> element : elements) {
+    if (Element* deepReferenceTarget = element->ResolveReferenceTarget()) {
+      resolvedElements.AppendElement(deepReferenceTarget);
+    }
+  }
+  return Some(std::move(resolvedElements));
+}
+
+void Element::GetAttrAssociatedElementsForBindings(
     nsAtom* aAttr, bool* aUseCachedValue,
     Nullable<nsTArray<RefPtr<Element>>>& aElements) {
   MOZ_ASSERT(aElements.IsNull());
 
-  auto& [explicitlySetAttrElements, cachedAttrElements] =
-      ExtendedDOMSlots()->mAttrElementsMap.LookupOrInsert(aAttr);
-
-  // https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#attr-associated-elements
-  auto getAttrAssociatedElements =
-      [&, &explicitlySetAttrElements =
-              explicitlySetAttrElements]() -> Maybe<nsTArray<RefPtr<Element>>> {
-    nsTArray<RefPtr<Element>> elements;
-
-    if (explicitlySetAttrElements) {
-      // 3. If reflectedTarget's explicitly set attr-elements is not null
-      for (const nsWeakPtr& weakEl : *explicitlySetAttrElements) {
-        // For each attrElement in reflectedTarget's explicitly set
-        // attr-elements:
-        if (nsCOMPtr<Element> attrEl = do_QueryReferent(weakEl)) {
-          // If attrElement is not a descendant of any of element's
-          // shadow-including ancestors, then continue.
-          if (!HasSharedRoot(attrEl)) {
-            continue;
-          }
-          // Append attrElement to elements.
-          elements.AppendElement(attrEl);
-        }
-      }
-    } else {
-      // 4. Otherwise
-      //   1. Let contentAttributeValue be the result of running
-      //   reflectedTarget's get the content attribute.
-      const nsAttrValue* value = GetParsedAttr(aAttr);
-      //   2. If contentAttributeValue is null, then return null.
-      if (!value) {
-        return Nothing();
-      }
-
-      //   3. Let tokens be contentAttributeValue, split on ASCII whitespace.
-      MOZ_ASSERT(value->Type() == nsAttrValue::eAtomArray ||
-                     value->Type() == nsAttrValue::eAtom,
-                 "Attribute used for attr associated elements must be parsed");
-      for (uint32_t i = 0; i < value->GetAtomCount(); i++) {
-        // For each id of tokens:
-        if (auto* candidate = GetElementByIdInDocOrSubtree(
-                value->AtomAt(static_cast<int32_t>(i)))) {
-          // Append candidate to elements.
-          elements.AppendElement(candidate);
-        }
-      }
-    }
-
-    return Some(std::move(elements));
-  };
-
   // getter steps:
   // 1. Let elements be the result of running this's get the attr-associated
   // elements.
-  auto elements = getAttrAssociatedElements();
+  auto elements = GetAttrAssociatedElementsInternal(aAttr);
 
-  if (elements && elements == cachedAttrElements) {
+  if (elements && StaticPrefs::dom_shadowdom_referenceTarget_enabled()) {
+    nsTArray<RefPtr<Element>> retargetedElements;
+    for (const RefPtr<Element> element : *elements) {
+      retargetedElements.AppendElement(RetargetReferenceTargetForBindings(element));
+    }
+    elements->SwapElements(retargetedElements);
+  }
+
+  auto& [_, cachedAttrElements] =
+      ExtendedDOMSlots()->mAttrElementsMap.LookupOrInsert(aAttr);
+  if (elements == cachedAttrElements) {
     // 2. If the contents of elements is equal to the contents of this's cached
     // attr-associated elements, then return this's cached attr-associated
     // elements object.

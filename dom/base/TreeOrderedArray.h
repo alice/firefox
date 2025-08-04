@@ -7,6 +7,7 @@
 #ifndef mozilla_dom_TreeOrderedArray_h
 #define mozilla_dom_TreeOrderedArray_h
 
+#include "nsContentUtils.h"
 #include "nsTArray.h"
 
 class nsINode;
@@ -16,7 +17,7 @@ class RefPtr;
 namespace mozilla::dom {
 
 // A sorted tree-ordered list of pointers (either raw or RefPtr) to nodes.
-template <typename NodePointer>
+template <typename NodePointer, TreeKind K = TreeKind::DOM>
 class TreeOrderedArray {
   template <typename T>
   struct RawTypeExtractor {};

@@ -940,6 +940,61 @@ void ShadowRoot::GetHTML(const GetHTMLOptions& aOptions, nsAString& aResult) {
       this, true, aResult, aOptions.mSerializableShadowRoots,
       aOptions.mShadowRoots);
 }
+
+// static
+bool ShadowRoot::ReferenceTargetIDTargetChanged(Element* aOldElement,
+                                                Element* aNewElement,
+                                                void* aData) {
+  ShadowRoot* shadowRoot = static_cast<ShadowRoot*>(aData);
+  if (aOldElement) {
+    shadowRoot->RemoveReferenceTargetChangeObserver(
+        aOldElement, RecursiveReferenceTargetChanged, shadowRoot);
+  }
+  if (aNewElement) {
+    shadowRoot->AddReferenceTargetChangeObserver(
+        aNewElement, RecursiveReferenceTargetChanged, shadowRoot);
+  }
+  shadowRoot->HandleReferenceTargetUpdated();
+  return true;
+}
+
+// static
+bool ShadowRoot::RecursiveReferenceTargetChanged(void* aData) {
+  ShadowRoot* shadowRoot = static_cast<ShadowRoot*>(aData);
+  shadowRoot->HandleReferenceTargetUpdated();
+  return true;
+}
+
 void ShadowRoot::SetReferenceTarget(RefPtr<nsAtom> aTarget) {
-  mReferenceTarget = std::move(aTarget);
+  if (aTarget == mReferenceTarget) {
+    return;
+  }
+
+  if (mReferenceTarget) {
+    RemoveIDTargetObserver(mReferenceTarget, ReferenceTargetIDTargetChanged,
+                           this, false);
+  }
+
+  if (!aTarget) {
+    mReferenceTarget = nullptr;
+  } else {
+    mReferenceTarget = std::move(aTarget);
+
+    AddIDTargetObserver(mReferenceTarget, ReferenceTargetIDTargetChanged, this,
+                        false);
+  }
+
+  HandleReferenceTargetUpdated();
+}
+
+void ShadowRoot::HandleReferenceTargetUpdated() {
+  Element* host = GetHost();
+  if (!host) {
+    return;
+  }
+
+  DocumentOrShadowRoot* root = host->GetContainingDocumentOrShadowRoot();
+  if (root) {
+    root->NotifyReferenceTargetChanged(host);
+  }
 }

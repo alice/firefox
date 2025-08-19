@@ -2823,13 +2823,13 @@ bool nsGenericHTMLFormControlElementWithState::ParseAttribute(
 mozilla::dom::Element*
 nsGenericHTMLFormControlElementWithState::GetPopoverTargetElementForBindings()
     const {
-  return GetPopoverTargetElementInternal();
+  return GetAttrAssociatedElementForBindings(nsGkAtoms::popovertarget);
 }
 
 mozilla::dom::Element*
 nsGenericHTMLFormControlElementWithState::GetPopoverTargetElementInternal()
     const {
-  return GetAttrAssociatedElement(nsGkAtoms::popovertarget);
+  return GetAttrAssociatedElementInternal(nsGkAtoms::popovertarget);
 }
 
 void nsGenericHTMLFormControlElementWithState::

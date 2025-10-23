@@ -347,7 +347,7 @@ class ShadowRoot final : public DocumentFragment, public DocumentOrShadowRoot {
                                              Element* aNewElement, void* aData);
   static bool RecursiveReferenceTargetChanged(void* aData);
 
-  void HandleReferenceTargetUpdated();
+  void HandleReferenceTargetUpdated(bool aRecursive);
 
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 };

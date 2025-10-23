@@ -3512,7 +3512,7 @@ bool Element::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
     return true;
   }
 
-  if (aAttribute == nsGkAtoms::form) {
+  if (aAttribute == nsGkAtoms::form || aAttribute == nsGkAtoms::_for) {
     aResult.ParseAtom(aValue);
     return true;
   }

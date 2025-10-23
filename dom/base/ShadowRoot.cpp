@@ -954,14 +954,14 @@ bool ShadowRoot::ReferenceTargetIDTargetChanged(Element* aOldElement,
     shadowRoot->AddReferenceTargetChangeObserver(
         aNewElement, RecursiveReferenceTargetChanged, shadowRoot);
   }
-  shadowRoot->HandleReferenceTargetUpdated();
+  shadowRoot->HandleReferenceTargetUpdated(false);
   return true;
 }
 
 // static
 bool ShadowRoot::RecursiveReferenceTargetChanged(void* aData) {
   ShadowRoot* shadowRoot = static_cast<ShadowRoot*>(aData);
-  shadowRoot->HandleReferenceTargetUpdated();
+  shadowRoot->HandleReferenceTargetUpdated(true);
   return true;
 }
 
@@ -984,10 +984,10 @@ void ShadowRoot::SetReferenceTarget(RefPtr<nsAtom> aTarget) {
                         false);
   }
 
-  HandleReferenceTargetUpdated();
+  HandleReferenceTargetUpdated(false);
 }
 
-void ShadowRoot::HandleReferenceTargetUpdated() {
+void ShadowRoot::HandleReferenceTargetUpdated(bool aRecursive) {
   Element* host = GetHost();
   if (!host) {
     return;
@@ -995,6 +995,6 @@ void ShadowRoot::HandleReferenceTargetUpdated() {
 
   DocumentOrShadowRoot* root = host->GetContainingDocumentOrShadowRoot();
   if (root) {
-    root->NotifyReferenceTargetChanged(host);
+    root->NotifyReferenceTargetChanged(host, aRecursive);
   }
 }

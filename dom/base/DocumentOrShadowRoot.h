@@ -184,7 +184,9 @@ class DocumentOrShadowRoot {
                               void* aData, bool aForImage);
 
   /**
-   * Callback called when a shadow root's reference target changes.
+   * Callback called when an element's resolved reference target changes.
+   * @param aData The callback data which was stored using
+   * AddReferenceTargetChangeObserver.
    * @return true to keep the callback in the callback set, false to remove it.
    */
   typedef bool (*ReferenceTargetChangeObserver)(void* aData);
@@ -209,13 +211,17 @@ class DocumentOrShadowRoot {
    */
   void AddReferenceTargetChangeObserver(Element* aElement,
                                         ReferenceTargetChangeObserver aObserver,
-                                        void* aData);
+                                        void* aData, bool aRecursive = true);
   void RemoveReferenceTargetChangeObserver(
-      Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData);
+      Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData,
+      bool aRecursive = true);
   /**
    * Called when aElement's resolved reference target changes.
+   * @param aElement the element whose reference target has changed
+   * @param recursive whether the reference target change was due to aElement's
+   * reference target's reference target changing
    */
-  void NotifyReferenceTargetChanged(Element* aElement);
+  void NotifyReferenceTargetChanged(Element* aElement, bool aRecursive);
 
   /**
    * Lookup an image element using its associated ID, which is usually provided
@@ -318,6 +324,7 @@ class DocumentOrShadowRoot {
   struct ReferenceTargetChangeCallback {
     ReferenceTargetChangeObserver mObserver;
     void* mData;
+    bool recursive;
   };
 
   struct ReferenceTargetChangeCallbackEntry : public PLDHashEntryHdr {

@@ -587,15 +587,17 @@ void DocumentOrShadowRoot::RemoveIDTargetObserver(nsAtom* aID,
 }
 
 void DocumentOrShadowRoot::AddReferenceTargetChangeObserver(
-    Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData) {
+    Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData,
+    bool aRecursive) {
   MOZ_ASSERT(aElement);
   MOZ_ASSERT(aElement->GetContainingDocumentOrShadowRoot() == this);
   auto& callbackEntries = mReferenceTargetObserverMap.LookupOrInsert(aElement);
-  callbackEntries.Insert({aObserver, aData});
+  callbackEntries.Insert({aObserver, aData, aRecursive});
 }
 
 void DocumentOrShadowRoot::RemoveReferenceTargetChangeObserver(
-    Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData) {
+    Element* aElement, ReferenceTargetChangeObserver aObserver, void* aData,
+    bool aRecursive) {
   MOZ_ASSERT(aElement);
 
   auto entry = mReferenceTargetObserverMap.Lookup(aElement);
@@ -603,14 +605,15 @@ void DocumentOrShadowRoot::RemoveReferenceTargetChangeObserver(
     return;
   }
   nsTHashSet<ReferenceTargetChangeCallbackEntry>& callbacks = entry.Data();
-  callbacks.Remove({aObserver, aData});
+  callbacks.Remove({aObserver, aData, aRecursive});
 
   if (entry.Data().IsEmpty()) {
     entry.Remove();
   }
 }
 
-void DocumentOrShadowRoot::NotifyReferenceTargetChanged(Element* aElement) {
+void DocumentOrShadowRoot::NotifyReferenceTargetChanged(Element* aElement,
+                                                        bool aRecursive) {
   MOZ_ASSERT(aElement);
 
   auto entry = mReferenceTargetObserverMap.Lookup(aElement);
@@ -620,6 +623,10 @@ void DocumentOrShadowRoot::NotifyReferenceTargetChanged(Element* aElement) {
 
   for (auto iter = entry.Data().begin(); iter != entry.Data().end(); ++iter) {
     const ReferenceTargetChangeCallback& callback = *iter;
+    if (aRecursive && !callback.recursive) {
+      continue;
+    }
+
     bool keep = callback.mObserver(callback.mData);
     if (!keep) {
       entry.Data().Remove(iter);
